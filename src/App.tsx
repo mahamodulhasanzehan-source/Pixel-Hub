@@ -26,7 +26,7 @@ export default function App() {
   };
 
   const { user, login, logout } = useAuth(showToast);
-  const { installedApps, installOrUpdate, uninstall } = useInstalledApps(user, showToast);
+  const { installedApps, installOrUpdate } = useInstalledApps(user, showToast);
 
   useEffect(() => {
     const loadApps = async () => {
@@ -45,10 +45,6 @@ export default function App() {
       return;
     }
     await installOrUpdate(repoName, version, url, isUpdate);
-  };
-
-  const handleOpen = (repoName: string) => {
-    showToast(`Opening ${repoName} on your desktop... (Simulated)`);
   };
 
   return (
@@ -80,8 +76,6 @@ export default function App() {
                   installedVersion={installedApps[repo]}
                   onOpenDetails={() => setSelectedApp(data)}
                   onDownloadOrUpdate={handleDownloadOrUpdate}
-                  onUninstall={uninstall}
-                  onOpen={handleOpen}
                 />
               );
             })}
@@ -96,8 +90,6 @@ export default function App() {
             installedVersion={installedApps[selectedApp.repoName]}
             onClose={() => setSelectedApp(null)} 
             onDownloadOrUpdate={handleDownloadOrUpdate}
-            onUninstall={uninstall}
-            onOpen={handleOpen}
           />
         )}
       </AnimatePresence>

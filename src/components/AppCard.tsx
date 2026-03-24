@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Download, Play, Info, X, AlertCircle, Box, Trash2, RefreshCw } from 'lucide-react';
+import { Download, Info, X, AlertCircle, Box, CheckCircle2 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { AppData } from '../types';
 
@@ -10,19 +10,16 @@ interface AppCardProps {
   installedVersion?: string;
   onOpenDetails: () => void;
   onDownloadOrUpdate: (repo: string, version: string, url: string, isUpdate?: boolean) => void;
-  onUninstall: (repo: string) => void;
-  onOpen: (repo: string) => void;
 }
 
 export const AppCard = ({ 
-  data, index, installedVersion, onOpenDetails, onDownloadOrUpdate, onUninstall, onOpen 
+  data, index, installedVersion, onOpenDetails, onDownloadOrUpdate 
 }: AppCardProps) => {
   const { repoName, release, error } = data;
   const exeAsset = release?.assets.find(a => a.name.endsWith('.exe'));
   
   const latestVersion = release?.tag_name;
   const isInstalled = !!installedVersion;
-  const needsUpdate = isInstalled && installedVersion !== latestVersion;
 
   return (
     <motion.div
@@ -68,67 +65,40 @@ export const AppCard = ({
         </div>
       </div>
 
-      <div className="p-5 border-t border-slate-800/50 bg-slate-900/80 flex gap-3 relative z-10" onClick={e => e.stopPropagation()}>
-        {exeAsset ? (
-          <>
-            {needsUpdate ? (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onDownloadOrUpdate(repoName, latestVersion!, exeAsset.browser_download_url, true)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-bold text-sm bg-gradient-to-r from-amber-600 to-orange-500 text-white hover:from-amber-500 hover:to-orange-400 shadow-[0_0_20px_rgba(245,158,11,0.3)] border border-amber-400/20 transition-all duration-300"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Update Available</span>
-              </motion.button>
-            ) : isInstalled ? (
-              <div className="flex-1 flex gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => onOpen(repoName)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-bold text-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all duration-300"
-                >
-                  <Play className="w-4 h-4" />
-                  <span>Open</span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => onUninstall(repoName)}
-                  className="flex items-center justify-center py-3 px-4 rounded-2xl font-bold text-sm bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all duration-300"
-                  title="Uninstall"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </motion.button>
-              </div>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onDownloadOrUpdate(repoName, latestVersion!, exeAsset.browser_download_url, false)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-cyan-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400/20 transition-all duration-300"
-              >
-                <Download className="w-4 h-4" />
-                <span>Get Module</span>
-              </motion.button>
-            )}
-          </>
-        ) : (
-          <button disabled className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-bold text-sm bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed">
-            <X className="w-4 h-4" />
-            <span>Unavailable</span>
-          </button>
+      <div className="p-5 border-t border-slate-800/50 bg-slate-900/80 flex flex-col gap-3 relative z-10" onClick={e => e.stopPropagation()}>
+        {isInstalled && (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit self-center">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Previously downloaded
+          </div>
         )}
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onOpenDetails}
-          className="p-3 rounded-2xl bg-slate-800/50 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all border border-slate-700/50"
-          title="View Details"
-        >
-          <Info className="w-5 h-5" />
-        </motion.button>
+        <div className="flex gap-3">
+          {exeAsset ? (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onDownloadOrUpdate(repoName, latestVersion!, exeAsset.browser_download_url, false)}
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-cyan-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400/20 transition-all duration-300"
+            >
+              <Download className="w-4 h-4" />
+              <span>Get Module</span>
+            </motion.button>
+          ) : (
+            <button disabled className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-bold text-sm bg-slate-800/50 text-slate-500 border border-slate-700/50 cursor-not-allowed">
+              <X className="w-4 h-4" />
+              <span>Unavailable</span>
+            </button>
+          )}
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onOpenDetails}
+            className="p-3 rounded-2xl bg-slate-800/50 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all border border-slate-700/50"
+            title="View Details"
+          >
+            <Info className="w-5 h-5" />
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );
