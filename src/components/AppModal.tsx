@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Download, Info, X, Github, AlertCircle, Box, CheckCircle2 } from 'lucide-react';
+import { Download, Info, X, Github, AlertCircle, Box, CheckCircle2, RefreshCw } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { AppData } from '../types';
 
@@ -19,6 +19,7 @@ export const AppModal = ({
   
   const latestVersion = release?.tag_name;
   const isInstalled = !!installedVersion;
+  const needsUpdate = isInstalled && installedVersion !== latestVersion;
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -63,10 +64,16 @@ export const AppModal = ({
                   <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700">
                     {new Date(release.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
-                  {isInstalled && (
+                  {isInstalled && !needsUpdate && (
                     <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                       <CheckCircle2 className="w-4 h-4" />
                       Previously downloaded
+                    </span>
+                  )}
+                  {isInstalled && needsUpdate && (
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <RefreshCw className="w-4 h-4" />
+                      New version available
                     </span>
                   )}
                 </div>

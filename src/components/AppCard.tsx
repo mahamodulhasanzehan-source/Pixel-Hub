@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Download, Info, X, AlertCircle, Box, CheckCircle2 } from 'lucide-react';
+import { Download, Info, X, AlertCircle, Box, CheckCircle2, RefreshCw } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { AppData } from '../types';
 
@@ -20,6 +20,7 @@ export const AppCard = ({
   
   const latestVersion = release?.tag_name;
   const isInstalled = !!installedVersion;
+  const needsUpdate = isInstalled && installedVersion !== latestVersion;
 
   return (
     <motion.div
@@ -66,10 +67,16 @@ export const AppCard = ({
       </div>
 
       <div className="p-5 border-t border-slate-800/50 bg-slate-900/80 flex flex-col gap-3 relative z-10" onClick={e => e.stopPropagation()}>
-        {isInstalled && (
+        {isInstalled && !needsUpdate && (
           <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit self-center">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Previously downloaded
+          </div>
+        )}
+        {isInstalled && needsUpdate && (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 w-fit self-center">
+            <RefreshCw className="w-3.5 h-3.5" />
+            New version available
           </div>
         )}
         <div className="flex gap-3">
