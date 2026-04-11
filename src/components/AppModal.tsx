@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Download, Info, X, Github, AlertCircle, Box, CheckCircle2, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Download, Info, X, Github, AlertCircle, Box, CheckCircle2, RefreshCw, ChevronDown } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { AppData } from '../types';
+import { AppData, GitHubRelease } from '../types';
+import { fetchAllReleases } from '../services/githubService';
 
 interface AppModalProps {
   data: AppData;
@@ -14,10 +15,16 @@ interface AppModalProps {
 export const AppModal = ({ 
   data, installedVersion, onClose, onDownloadOrUpdate 
 }: AppModalProps) => {
-  const { repoName, release, error } = data;
+  const { repoName, release: initialRelease, error } = data;
+  const [release, setRelease] = useState<GitHubRelease | null>(initialRelease);
+  const [allReleases, setAllReleases] = useState<GitHubRelease[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoadingReleases, setIsLoadingReleases] = useState(false);
+
   const exeAsset = release?.assets.find(a => a.name.endsWith('.exe'));
   
-  const latestVersion = release?.tag_name;
+  const latestVersion = initialRelease?.tag_name;
+  const currentViewVersion = release?.tag_name;
   const isInstalled = !!installedVersion;
   const needsUpdate = isInstalled && installedVersion !== latestVersion;
 
@@ -27,6 +34,21 @@ export const AppModal = ({
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  const handleVersionClick = async () => {
+    if (!isDropdownOpen && allReleases.length === 0) {
+      setIsLoadingReleases(true);
+      const releases = await fetchAllReleases(repoName);
+      setAllReleases(releases);
+      setIsLoadingReleases(false);
+    }
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleSelectRelease = (selectedRelease: GitHubRelease) => {
+    setRelease(selectedRelease);
+    setIsDropdownOpen(false);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -57,10 +79,46 @@ export const AppModal = ({
               <h2 className="text-3xl font-extrabold text-slate-100 tracking-tight">{repoName.replace(/-/g, ' ')}</h2>
               {release && (
                 <div className="flex items-center gap-4 mt-2 text-sm font-medium text-slate-400">
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700">
-                    <Github className="w-4 h-4" />
-                    {release.tag_name}
-                  </span>
+                  <div className="relative">
+                    <button 
+                      onClick={handleVersionClick}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 hover:bg-slate-700 transition-colors"
+                    >
+                      <Github className="w-4 h-4" />
+                      {currentViewVersion}
+                      <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {isDropdownOpen && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute top-full left-0 mt-2 w-48 max-h-60 overflow-y-auto custom-scrollbar bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50"
+                        >
+                          {isLoadingReleases ? (
+                            <div className="p-3 text-center text-slate-400 text-xs">Loading versions...</div>
+                          ) : allReleases.length > 0 ? (
+                            <div className="py-1">
+                              {allReleases.map(r => (
+                                <button
+                                  key={r.id}
+                                  onClick={() => handleSelectRelease(r)}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition-colors ${r.tag_name === currentViewVersion ? 'text-blue-400 bg-slate-700/50' : 'text-slate-300'}`}
+                                >
+                                  {r.tag_name}
+                                  {r.tag_name === latestVersion && <span className="ml-2 text-xs text-slate-500">(Latest)</span>}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-3 text-center text-slate-400 text-xs">No other versions found</div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                   <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700">
                     {new Date(release.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
@@ -127,7 +185,7 @@ export const AppModal = ({
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onDownloadOrUpdate(repoName, latestVersion!, exeAsset.browser_download_url, false)}
+              onClick={() => onDownloadOrUpdate(repoName, currentViewVersion!, exeAsset.browser_download_url, false)}
               className="flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-500 hover:to-cyan-500 shadow-[0_0_30px_rgba(59,130,246,0.4)] border border-blue-400/30 transition-all duration-300"
             >
               <Download className="w-5 h-5" />

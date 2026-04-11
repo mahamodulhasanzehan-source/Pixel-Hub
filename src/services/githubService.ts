@@ -6,7 +6,7 @@ export const fetchAppReleases = async (repos: string[]): Promise<Record<string, 
 
   for (const repo of repos) {
     try {
-      const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo}/releases/latest`);
+      const response = await fetch(`/api/github/${GITHUB_USER}/${repo}/releases/latest`);
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
       }
@@ -19,4 +19,17 @@ export const fetchAppReleases = async (repos: string[]): Promise<Record<string, 
   }
 
   return newData;
+};
+
+export const fetchAllReleases = async (repo: string): Promise<GitHubRelease[]> => {
+  try {
+    const response = await fetch(`/api/github/${GITHUB_USER}/${repo}/releases`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching all releases for ${repo}:`, error);
+    return [];
+  }
 };
