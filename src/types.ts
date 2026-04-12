@@ -5,6 +5,7 @@ export interface GitHubAsset {
 }
 
 export interface GitHubRelease {
+  id: number;
   tag_name: string;
   name: string;
   body: string;
