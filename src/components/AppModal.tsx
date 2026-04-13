@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Download, Info, X, Github, AlertCircle, Box, CheckCircle2, RefreshCw, ChevronDown } from 'lucide-react';
+import { Download, Info, X, Github, AlertCircle, Box, ChevronDown } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { AppData, GitHubRelease } from '../types';
 import { fetchAllReleases } from '../services/githubService';
 
 interface AppModalProps {
   data: AppData;
-  installedVersion?: string;
   onClose: () => void;
-  onDownloadOrUpdate: (repo: string, version: string, url: string, isUpdate?: boolean) => void;
+  onDownload: (repo: string, version: string, url: string) => void;
 }
 
 export const AppModal = ({ 
-  data, installedVersion, onClose, onDownloadOrUpdate 
+  data, onClose, onDownload 
 }: AppModalProps) => {
   const { repoName, release: initialRelease, error } = data;
   const [release, setRelease] = useState<GitHubRelease | null>(initialRelease);
@@ -25,8 +24,6 @@ export const AppModal = ({
   
   const latestVersion = initialRelease?.tag_name;
   const currentViewVersion = release?.tag_name;
-  const isInstalled = !!installedVersion;
-  const needsUpdate = isInstalled && installedVersion !== latestVersion;
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -122,18 +119,6 @@ export const AppModal = ({
                   <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700">
                     {new Date(release.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
-                  {isInstalled && !needsUpdate && (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Previously downloaded
-                    </span>
-                  )}
-                  {isInstalled && needsUpdate && (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      <RefreshCw className="w-4 h-4" />
-                      New version available
-                    </span>
-                  )}
                 </div>
               )}
             </div>
@@ -185,7 +170,7 @@ export const AppModal = ({
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onDownloadOrUpdate(repoName, currentViewVersion!, exeAsset.browser_download_url, false)}
+              onClick={() => onDownload(repoName, currentViewVersion!, exeAsset.browser_download_url)}
               className="flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-500 hover:to-cyan-500 shadow-[0_0_30px_rgba(59,130,246,0.4)] border border-blue-400/30 transition-all duration-300"
             >
               <Download className="w-5 h-5" />

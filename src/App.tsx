@@ -5,8 +5,6 @@ import { Loader2 } from 'lucide-react';
 import { AppData } from './types';
 import { MODULES_LIST } from './config/modules';
 import { fetchAppReleases } from './services/githubService';
-import { useAuth } from './hooks/useAuth';
-import { useInstalledApps } from './hooks/useInstalledApps';
 
 import { BackgroundDoodles } from './components/BackgroundDoodles';
 import { Header } from './components/Header';
@@ -25,9 +23,6 @@ export default function App() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const { user, login, logout } = useAuth(showToast);
-  const { installedApps, installOrUpdate } = useInstalledApps(user, showToast);
-
   useEffect(() => {
     const loadApps = async () => {
       setLoading(true);
@@ -38,19 +33,20 @@ export default function App() {
     loadApps();
   }, []);
 
-  const handleDownloadOrUpdate = async (repoName: string, version: string, url: string, isUpdate: boolean = false) => {
-    if (!user) {
-      showToast("Please sign in to download modules.");
-      login();
-      return;
-    }
-    await installOrUpdate(repoName, version, url, isUpdate);
+  const handleDownload = (repoName: string, version: string, url: string) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast(`Downloading ${repoName} ${version}...`);
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 relative">
       <BackgroundDoodles />
-      <Header user={user} onLogin={login} onLogout={logout} />
+      <Header />
 
       <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         {loading ? (
@@ -73,9 +69,8 @@ export default function App() {
                   key={repo} 
                   data={data} 
                   index={index}
-                  installedVersion={installedApps[repo]}
                   onOpenDetails={() => setSelectedApp(data)}
-                  onDownloadOrUpdate={handleDownloadOrUpdate}
+                  onDownload={handleDownload}
                 />
               );
             })}
@@ -87,9 +82,8 @@ export default function App() {
         {selectedApp && (
           <AppModal 
             data={selectedApp} 
-            installedVersion={installedApps[selectedApp.repoName]}
             onClose={() => setSelectedApp(null)} 
-            onDownloadOrUpdate={handleDownloadOrUpdate}
+            onDownload={handleDownload}
           />
         )}
       </AnimatePresence>

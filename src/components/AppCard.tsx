@@ -1,26 +1,23 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Download, Info, X, AlertCircle, Box, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Download, Info, X, AlertCircle, Box } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { AppData } from '../types';
 
 interface AppCardProps {
   data: AppData;
   index: number;
-  installedVersion?: string;
   onOpenDetails: () => void;
-  onDownloadOrUpdate: (repo: string, version: string, url: string, isUpdate?: boolean) => void;
+  onDownload: (repo: string, version: string, url: string) => void;
 }
 
 export const AppCard = ({ 
-  data, index, installedVersion, onOpenDetails, onDownloadOrUpdate 
+  data, index, onOpenDetails, onDownload 
 }: AppCardProps) => {
   const { repoName, release, error } = data;
   const exeAsset = release?.assets.find(a => a.name.endsWith('.exe'));
   
   const latestVersion = release?.tag_name;
-  const isInstalled = !!installedVersion;
-  const needsUpdate = isInstalled && installedVersion !== latestVersion;
 
   return (
     <motion.div
@@ -67,24 +64,12 @@ export const AppCard = ({
       </div>
 
       <div className="p-5 border-t border-slate-800/50 bg-slate-900/80 flex flex-col gap-3 relative z-10" onClick={e => e.stopPropagation()}>
-        {isInstalled && !needsUpdate && (
-          <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit self-center">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Previously downloaded
-          </div>
-        )}
-        {isInstalled && needsUpdate && (
-          <div className="flex items-center gap-1.5 text-xs font-medium text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 w-fit self-center">
-            <RefreshCw className="w-3.5 h-3.5" />
-            New version available
-          </div>
-        )}
         <div className="flex gap-3">
           {exeAsset ? (
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onDownloadOrUpdate(repoName, latestVersion!, exeAsset.browser_download_url, false)}
+              onClick={() => onDownload(repoName, latestVersion!, exeAsset.browser_download_url)}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-cyan-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400/20 transition-all duration-300"
             >
               <Download className="w-4 h-4" />
