@@ -67,7 +67,7 @@ export const AppModal = ({
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500" />
         
-        <div className="flex items-center justify-between p-8 border-b border-slate-800/50 bg-slate-900/50 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-8 border-b border-slate-800/50 bg-slate-900/50 sticky top-0 z-50">
           <div className="flex items-center gap-5">
             <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20">
               <Box className="w-8 h-8 text-blue-400" />

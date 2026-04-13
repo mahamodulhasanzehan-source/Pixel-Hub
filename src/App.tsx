@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 
 import { AppData } from './types';
-import { MODULES_LIST } from './config/modules';
-import { fetchAppReleases } from './services/githubService';
+import { fetchAllUserApps } from './services/githubService';
 
 import { BackgroundDoodles } from './components/BackgroundDoodles';
 import { Header } from './components/Header';
@@ -26,7 +25,7 @@ export default function App() {
   useEffect(() => {
     const loadApps = async () => {
       setLoading(true);
-      const data = await fetchAppReleases(MODULES_LIST);
+      const data = await fetchAllUserApps();
       setAppsData(data);
       setLoading(false);
     };
@@ -60,20 +59,15 @@ export default function App() {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {MODULES_LIST.map((repo, index) => {
-              const data = appsData[repo];
-              if (!data) return null;
-
-              return (
-                <AppCard 
-                  key={repo} 
-                  data={data} 
-                  index={index}
-                  onOpenDetails={() => setSelectedApp(data)}
-                  onDownload={handleDownload}
-                />
-              );
-            })}
+            {Object.values(appsData).map((data, index) => (
+              <AppCard 
+                key={data.repoName} 
+                data={data} 
+                index={index}
+                onOpenDetails={() => setSelectedApp(data)}
+                onDownload={handleDownload}
+              />
+            ))}
           </div>
         )}
       </main>
