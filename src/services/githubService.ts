@@ -3,7 +3,7 @@ import { GITHUB_USER } from '../config/modules';
 
 export const fetchAllUserApps = async (): Promise<Record<string, AppData>> => {
   try {
-    const reposResponse = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=updated`);
+    const reposResponse = await fetch(`/api/github/repos?user=${GITHUB_USER}`);
     if (!reposResponse.ok) {
       throw new Error(`Failed to fetch repositories: ${reposResponse.statusText}`);
     }
@@ -17,7 +17,7 @@ export const fetchAllUserApps = async (): Promise<Record<string, AppData>> => {
     // Fetch releases in parallel
     await Promise.all(sourceRepos.map(async (repo: any) => {
       try {
-        const releaseResponse = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo.name}/releases/latest`);
+        const releaseResponse = await fetch(`/api/github/latest-release?user=${GITHUB_USER}&repo=${repo.name}`);
         if (releaseResponse.ok) {
           const release: GitHubRelease = await releaseResponse.json();
           newData[repo.name] = { repoName: repo.name, release };
@@ -36,7 +36,7 @@ export const fetchAllUserApps = async (): Promise<Record<string, AppData>> => {
 
 export const fetchAllReleases = async (repo: string): Promise<GitHubRelease[]> => {
   try {
-    const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${repo}/releases`);
+    const response = await fetch(`/api/github/releases?user=${GITHUB_USER}&repo=${repo}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch: ${response.statusText}`);
     }

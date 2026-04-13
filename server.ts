@@ -10,59 +10,51 @@ async function startServer() {
   const PORT = 3000;
 
   // API routes
-  app.get("/api/github/:user/:repo/releases/latest", async (req, res) => {
-    const { user, repo } = req.params;
+  app.get("/api/github/repos", async (req, res) => {
+    const { user } = req.query;
     const token = process.env.GITHUB_PAT;
-
-    const headers: Record<string, string> = {
-      "User-Agent": "Pixcel-Hub-Proxy",
-    };
-    
-    if (token) {
-      headers["Authorization"] = `token ${token}`;
-    }
+    const headers: Record<string, string> = { "User-Agent": "Pixcel-Hub-Proxy" };
+    if (token) headers["Authorization"] = `token ${token}`;
 
     try {
-      const response = await fetch(`https://api.github.com/repos/${user}/${repo}/releases/latest`, {
-        headers,
-      });
-
-      if (!response.ok) {
-        return res.status(response.status).json({ error: `GitHub API error: ${response.statusText}` });
-      }
-
+      const response = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=updated`, { headers });
+      if (!response.ok) return res.status(response.status).json({ error: response.statusText });
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch from GitHub" });
+      res.status(500).json({ error: "Failed to fetch" });
     }
   });
 
-  app.get("/api/github/:user/:repo/releases", async (req, res) => {
-    const { user, repo } = req.params;
+  app.get("/api/github/latest-release", async (req, res) => {
+    const { user, repo } = req.query;
     const token = process.env.GITHUB_PAT;
-
-    const headers: Record<string, string> = {
-      "User-Agent": "Pixcel-Hub-Proxy",
-    };
-    
-    if (token) {
-      headers["Authorization"] = `token ${token}`;
-    }
+    const headers: Record<string, string> = { "User-Agent": "Pixcel-Hub-Proxy" };
+    if (token) headers["Authorization"] = `token ${token}`;
 
     try {
-      const response = await fetch(`https://api.github.com/repos/${user}/${repo}/releases`, {
-        headers,
-      });
-
-      if (!response.ok) {
-        return res.status(response.status).json({ error: `GitHub API error: ${response.statusText}` });
-      }
-
+      const response = await fetch(`https://api.github.com/repos/${user}/${repo}/releases/latest`, { headers });
+      if (!response.ok) return res.status(response.status).json({ error: response.statusText });
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch from GitHub" });
+      res.status(500).json({ error: "Failed to fetch" });
+    }
+  });
+
+  app.get("/api/github/releases", async (req, res) => {
+    const { user, repo } = req.query;
+    const token = process.env.GITHUB_PAT;
+    const headers: Record<string, string> = { "User-Agent": "Pixcel-Hub-Proxy" };
+    if (token) headers["Authorization"] = `token ${token}`;
+
+    try {
+      const response = await fetch(`https://api.github.com/repos/${user}/${repo}/releases`, { headers });
+      if (!response.ok) return res.status(response.status).json({ error: response.statusText });
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch" });
     }
   });
 
